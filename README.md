@@ -1,51 +1,32 @@
+1. Submit proposal [10 of grade] (Due: November 14, 11:59pm): Submit a pro- posal as a one page pdf. Provide an outline of your plan for the project and questions you will investigate / analysis you’ll conduct in the course of it. It may help to define a set of hypotheses you will test. An integral aspect of the proposal is to define a project idea that is both realistic and ambitious in scope. We recommend that you use the project proposal stage to get feedback from the teaching staff on the project’s feasibility and whether the proposal satisfies the project expectations of the class. 
 
-Here, I implement an experiment proposed by Paul Christiano [here](https://www.alignmentforum.org/posts/BxersHYN2qcFoonwg/experimentally-evaluating-whether-honesty-generalizes?commentId=dsDA2BWpHPdgLvaXX) to learn something about the generalization of transformers.
-For simplicity I focus on a simple synthetic task: shortest
-paths.
 
-**the below document is not quite an accurate representation of
-what I actually ended up doing. TODO: clean this up, and add some
-documentation to the project**
+Specify architecture stuff
 
-# PLAN:
+Specify the training data generation process
 
-Let N be the maximum number of vertices in any graph that we ever consider.
-Let D be a number such that most graphs that we consider have diameter at most D.
+undirected graph
 
-ARCH:
-Let's stack D transformers.
-To start, we are fed in an edge list.
-Then we embed these and do transformer things.
+[XY == write out how we're gonna generate data]
+PRE-train data 
 
-Then, one way I could imagine performing the task is, in the i-th
-layer you can compute whether or not you are distance i from
-vertex 1. Or even closer. 
-I haven't thought about exactly how you wire the self-attention +
-residual connections etc to make this happen, but it seems
-do-able.
+Fine-tune data
 
-Anyways, our training regiment has two steps
-1. Train the network to compute shortest paths between vtx 1 and vtx 2 on Erdos-Renyi random graphs with number of vertices between 10 and 100 vertices.
-2. Fine tune the network to compute shortest paths between vtx 1
-   and vtx i for every other i, on Erdos-Renyi random graphs with
-   number of vertices being between 10 and 20.
+validation data
 
-Then for evaluation we see 
-1. How well does the model do at d(1,2)?
-2. How well does the model do at d(1,i) in the small number of
-   vertices regime?
-3. Does the model generalize to handle d(1,i) in the large number
-   of vertices regime?
+- hypothesis 1 -- transformers can learn shortest paths without too much GPUs
 
-# notes
+mathemetical motivation for why this is possible with a not super deep transfomer. 
 
-Recall how a transformer works:
+- hypothesis 2 -- pre-training on 1-2 shortest path should make fine-tuning for other shortest paths which are prefix of the shortest 1-2 path faster
 
-score(i,j) = Key[i] * Query[j]
-alpha(i,j) = softmax(scores)
-embedding(i) = sum_{j} alpha(i,j) Val[j]
+we believe this because the info should be sitting somewhere inside the model
 
-Then we have a fully connected NN.
-Next we do a layernorm.
-After that we have a residual connection.
+- hypothesis 3 -- training for lots of sizes of 1-2  paths, and fine tuning on small graphs, it'll generalize to large graphs.
 
+we hope that this is like Occam's razor 
+
+train on erdos renyi graphs, does it generalize to arbitrary graphs?
+
+Inspiration for project 
+Here, I implement an experiment proposed by Paul Christiano [here](https://www.alignmentforum.org/posts/BxersHYN2qcFoonwg/experimentally-evaluating-whether-honesty-generalizes?commentId=dsDA2BWpHPdgLvaXX) 
