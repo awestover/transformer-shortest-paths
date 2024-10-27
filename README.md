@@ -1,32 +1,135 @@
-1. Submit proposal [10 of grade] (Due: November 14, 11:59pm): Submit a pro- posal as a one page pdf. Provide an outline of your plan for the project and questions you will investigate / analysis you’ll conduct in the course of it. It may help to define a set of hypotheses you will test. An integral aspect of the proposal is to define a project idea that is both realistic and ambitious in scope. We recommend that you use the project proposal stage to get feedback from the teaching staff on the project’s feasibility and whether the proposal satisfies the project expectations of the class. 
+Alek Westover, Anthony Wang, Kevin Zhao
+
+MIT Deep Learning Final Project
+
+"Investigating Off-Distribution Generalization of Transformers"
+
+In this project we hope to further the community's understanding of *when* off-distribution generalization happens. Paul Christiano proposed an experiment [here](https://www.alignmentforum.org/posts/BxersHYN2qcFoonwg/experimentally-evaluating-whether-honesty-generalizes?commentId=dsDA2BWpHPdgLvaXX) to investigate this; our project is essentially to implement Christiano's proposed experiment. To the best of our knowledge no one has done this yet.
+
+## Motivation
+
+It is generally desirable for LLMs to output true statements.
+One current approach for ensuring truthfulness of LLM outputs is having
+a human in the loop that rewards a model for true outputs (e.g.,
+RLHF).
+One drawback of this approach is that sometimes humans may be
+poor judges of truthfulness.
+Humans enjoy many cognitive biases and might employ superficial
+heuristics when judging truthfulness.
+A further challenge is that as LLMs become more capable, there
+might not even exist experts that are good judges of whether the
+models outputs are truthful.
+For instance, most Task Rabbit workers would probably be hard
+pressed to evaluate whether a difficult mathematical proof
+produced by an LLM is true. The entire mathematical community has
+been known on occasion to believe [false statements for many years](https://en.wikipedia.org/wiki/Grunwald%E2%80%93Wang_theorem).
+
+One approach to solving this problem is to reward an LLM for
+truthful behavior on simple inputs, and then hope that the LLM
+generalizes to truthful behavior on more complex inputs where
+humans are unable to give helpful labels.
+Deep learning models often perform remarkable feats of
+off-distribution generalization -- for instance, a model trained
+to transform hand drawn cats into images of cats might be
+able to handle a "cat" with three eyes in an intuitive way.
+We might hope that generalizing truthfully is simple, and thus
+promoted by "Occam's Razor". We hope that our experiments in this
+project can shed light on whether this is likely to happen.
 
 
-Specify architecture stuff
+## Plan
 
-Specify the training data generation process
+We will use a synthetic task to test our hypothesis that models
+will generalize truthfully off-distribution. 
+The synthetic task is computing the distance between various
+vertices in an input graph. Our experiment will have three parts:
 
-undirected graph
+1. Pre-train a transformer to predict the distance between two
+   fixed vertices $s,t$ on graphs with $n\in [16, 64]$ vertices.
+2. Fine-tune a transformer to predict the distances between
+   $s,t'$ for any $t'$ which is on the shortest path from $s$ to
+   $t$. Only do the fine-tuning on graphs with $n\in [16,32]$
+   vertices.
+3. Test whether the transformer can accurately predict the
+   distances between $s,t'$ for any $t'$ on the shortest path
+   from $s$ to $t$ for graphs with $n\in [16,64]$ vertices.
 
-[XY == write out how we're gonna generate data]
-PRE-train data 
+## Data
 
-Fine-tune data
+To represent an $n$ vertex, $m$ edge graph we will use a sequence
+$[a_1,b_1,a_2,b_2,\ldots,a_m,b_m] \in \{1,2,\ldots,n\}^{2m}$. We
+will use the token $0$ as a padding token and pad all the
+sequences to be the same length.
+This sequence represents an unweighted, undirected graph on vertex set
+$\{1,\ldots,n\}$ with edges $\{(a_i,b_i)\}$.
 
-validation data
+The full input to our model will have one more token (after
+adding the padding tokens), which is the target vertex. The value
+that the model is tasked with predicting is the distance between
+vertex $1$ and the target vertex $t$. In the case that there is
+no path from $1$ to $t$ we set this distance to be one larger
+than the maximum possible number of vertices -- this represents
+infinity.
 
-- hypothesis 1 -- transformers can learn shortest paths without too much GPUs
+So in summary, an input output pair for our model could look like
+this:
 
-mathemetical motivation for why this is possible with a not super deep transfomer. 
+> Input: [1, 3, 3, 2, 0, 0, 0, 0, 2]. Output: 2
 
-- hypothesis 2 -- pre-training on 1-2 shortest path should make fine-tuning for other shortest paths which are prefix of the shortest 1-2 path faster
+![ink_img001](images/ink_img001.png)
 
-we believe this because the info should be sitting somewhere inside the model
+We have three separate datasets.
 
-- hypothesis 3 -- training for lots of sizes of 1-2  paths, and fine tuning on small graphs, it'll generalize to large graphs.
+**Pre-train data**
 
-we hope that this is like Occam's razor 
+For each $n\in [16,64]$ we will generate several graphs on $n$
+vertices. We generate these graphs by inserting $2n$ random edges into the graph.
+We always set the target vertex to be $2$ here.
 
-train on erdos renyi graphs, does it generalize to arbitrary graphs?
+**Fine-tune data**
+For each $n\in [16,32]$ we will generate several graphs on $n$
+vertices. We generate these graphs by inserting $2n$ random edges into the graph.
+We select the target vertex to be a random vertex on the shortest
+path from $1$ to $2$.
 
-Inspiration for project 
-Here, I implement an experiment proposed by Paul Christiano [here](https://www.alignmentforum.org/posts/BxersHYN2qcFoonwg/experimentally-evaluating-whether-honesty-generalizes?commentId=dsDA2BWpHPdgLvaXX) 
+**Generalization testing data**
+The same as the fine-tune data, except we sample $n\in [32,64]$
+instead.
+
+As a side note, we're also curious whether the transformer
+learns to generalize to different distributions of graphs, e.g.,
+denser graphs or graphs with different properties. Time
+permitting we'll investigate this as well.
+
+## Architecture
+
+We plan to use a standard transformer architecture. We will
+ensure that the number of layers in our transformer is at least
+the diameter of the graph. By doing this, we ensure that there is
+an extremely simple circuit --- namely BFS --- that the transformer
+could in theory learn to perform the task.
+Note that if the transformer actually learns a simple circuit to
+perform this task, then it seems more likely to generalize well.
+This is also our intuition for why it should be possible to fine
+tune on a small amount of data for finding shortest paths to
+other vertices besides $2$ -- it seems like the model should be
+computing these other distances as intermediate values in its
+computation to find the distance to vertex $2$.
+
+## Positional Encodings 
+
+In order to facilitate performing this task with limited
+computational resources, we plan to use custom-made positional
+encodings that tell the model extra information about the
+structure of the problem, rather than the traditional sine/cosine
+positional encodings (although we're open to experimenting to see
+if our custom positional encodings actually are any better than
+the sine/cosine positional encodings).
+Specifically, our positional encodings will be
+$v_1,v_1,v_2,v_2,\ldots,v_m,v_m,v_{m+1}$ where these are all
+random independent vectors.
+We will concatenate these with the token encodings rather than
+adding them.
+This should let the model easily have large attention scores between
+vertices corresponding to a single edge. 
+
