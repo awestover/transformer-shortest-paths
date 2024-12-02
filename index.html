@@ -202,8 +202,9 @@ Generalization of Transformers</h1>
 <p>{xy,alekw,kevinmz}@mit.edu</p>
 </div>
 <h2 id="abstract">Abstract</h2>
-<p>TODO: Probably should move this to the introduction instead of
-abstract?</p>
+<p>TODO</p>
+<h2 id="introduction">Introduction</h2>
+<h3 id="overview">Overview</h3>
 <p>Recently, LLMs have been developing very fast, and with that comes
 the concern of aligning the models to output true and productive
 statements. One common approach for ensuring this is to have a human in
@@ -214,10 +215,7 @@ experts that are good judges of whether the model’s outputs, such as
 difficult mathematical proofs, are truthful. So, we’d like to propose a
 potential solution to this issue via <strong>off-distribution
 generalization</strong> - applying human-like intuition to solve
-problems not in the dataset. To do so involves Graph Neural Networks
-(GNNs), which are important in many artificial intelligence
-applications, including the design of practical features. Paul
-Christiano <a
+problems not in the dataset. Paul Christiano <a
 href="https://www.alignmentforum.org/posts/BxersHYN2qcFoonwg/experimentally-evaluating-whether-honesty-generalizes?commentId=dsDA2BWpHPdgLvaXX">proposed
 an experiment</a> about shortest paths in a graph; our project is
 essentially to implement Christiano’s proposed experiment. To the best
@@ -226,32 +224,24 @@ learning for different variations of graph searches <span
 class="citation" data-cites="10.5555/3666122.3666260">(<a
 href="#ref-10.5555/3666122.3666260" role="doc-biblioref">Zang et al.
 2024</a>)</span>, no one has done our exact experiment yet.</p>
-<h1 id="introduction">Introduction</h1>
-<h2 id="overview">Overview</h2>
-<h2 id="related-work">Related Work</h2>
-<p>There has been some research into the algorithmic optimization of
-GNNs and how they may solve real-world issues; however, none of the
-related work targets using generic machine learning methods to solve
-graph problems.</p>
-<ul>
-<li><p>Cappart et al. has researched more into the Combinatorial
-Optimization of GNNs and developed algorithms for related tasks, thus
-facilitating machine learning <span class="citation"
-data-cites="DBLP:journals/corr/abs-2102-09544">(<a
-href="#ref-DBLP:journals/corr/abs-2102-09544"
-role="doc-biblioref">Cappart et al. 2021</a>)</span>. Their results are
-mostly algorithmic so we develop further by trading a bit of accuracy
-for much faster computation in such tasks.</p></li>
-<li><p>Tutsoy uses a graph-theory-based approach to model the
-epidemiological characteristics of infectious diseases, such as COVID-19
-<span class="citation" data-cites="10.1109/TPAMI.2023.3256421">(<a
-href="#ref-10.1109/TPAMI.2023.3256421" role="doc-biblioref">Tutsoy
-2023</a>)</span>. We understand from his paper how GNN optimization may
-also be useful in researching novel diseases.</p></li>
-</ul>
-<h2 id="sectioning">Sectioning</h2>
-<h1 id="our-machine-learning-approach">Our Machine Learning
-Approach</h1>
+<p>It is generally desirable for LLMs to output true statements. A
+current approach for ensuring this is to have a human in the loop
+rewarding the model for true outputs (e.g. RLHF); however, humans can be
+poor judges of truthfulness. We enjoy many cognitive biases and might
+employ superficial heuristics when judging truthfulness. A further
+challenge is that as LLMs develop further, there might not even exist
+experts that can correctly judge the accuracy and truthfulness of
+sophisticated outputs such as difficult mathematical proofs.</p>
+<p>One approach to solving this problem is to reward an LLM for truthful
+behavior on simple inputs, and then hoping that the LLM generalizes its
+truthful behavior for more complex inputs where humans cannot provide
+helpful labels. Deep learning models often perform remarkable feats of
+off-distribution generalization – for instance, a model trained to
+transform hand drawn cats into images of cats might be able to handle a
+“cat” with three eyes in an intuitive way. We might hope that
+generalizing truthfully is simple, thus promoted by “Occam’s Razor”, and
+aim to investigate that with this project.</p>
+<p>COMMENT FROM KEVIN – synthesize from intorduction</p>
 <h2 id="task">Task</h2>
 <p>We will use a synthetic task to test our hypothesis that models will
 generalize truthfully off-distribution. The synthetic task is computing
@@ -276,7 +266,95 @@ between <span class="math inline"><em>s</em>, <em>t</em>′</span> for any
 class="math inline"><em>t</em></span> for graphs with <span
 class="math inline"><em>n</em> ∈ [16, 32)</span> vertices.</li>
 </ol>
-<h2 id="data">Data</h2>
+<h2 id="related-work">Related Work</h2>
+<p>COMMENT FROM ALEK – please remove all mentions of graph neural
+networks – that is BS: there is no actual reason why you’d ever use a
+Neural network to solve shortest paths, the point of choosing a
+synthetic task is because there is a <strong>simple ground
+truth</strong> which makes it easy to evaluate whether or not our model
+is performing correctly. We’d also hoped that the simplicity of the task
+would make it more feasible to do with a limited compute budget, but
+apparently this task was too hard for our architecture.</p>
+<p>There has been some research into the algorithmic optimization of
+GNNs and how they may solve real-world issues; however, none of the
+related work targets using generic machine learning methods to solve
+graph problems.</p>
+<ul>
+<li><p>Cappart et al. has researched more into the Combinatorial
+Optimization of GNNs and developed algorithms for related tasks, thus
+facilitating machine learning <span class="citation"
+data-cites="DBLP:journals/corr/abs-2102-09544">(<a
+href="#ref-DBLP:journals/corr/abs-2102-09544"
+role="doc-biblioref">Cappart et al. 2021</a>)</span>. Their results are
+mostly algorithmic so we develop further by trading a bit of accuracy
+for much faster computation in such tasks.</p></li>
+<li><p>Tutsoy uses a graph-theory-based approach to model the
+epidemiological characteristics of infectious diseases, such as COVID-19
+<span class="citation" data-cites="10.1109/TPAMI.2023.3256421">(<a
+href="#ref-10.1109/TPAMI.2023.3256421" role="doc-biblioref">Tutsoy
+2023</a>)</span>. We understand from his paper how GNN optimization may
+also be useful in researching novel diseases.</p></li>
+</ul>
+<h3 id="theory">Theory</h3>
+<h3 id="algorithm-for-shortest-paths">Algorithm for Shortest Paths</h3>
+<p>The standard algorithm to find the shortest path in a graph between a
+source numbered as <span class="math inline"><em>u</em></span> and sink
+numbered as <span class="math inline"><em>v</em></span> is
+<strong>breadth-first search (BFS)</strong>. The BFS algorithm maintains
+a mapping of visited vertices to their distances with respect to <span
+class="math inline"><em>u</em></span>, and each run of the algorithm
+goes through all the vertices newly visited in the previous run, and for
+each vertex, visits any of its unvisited neighbors. The algorithm
+terminates once either <span class="math inline"><em>v</em></span> is
+visited or the set of newly visited vertices in a single run is
+empty.</p>
+<p>We will use this algorithm to verify the accuracy of our machine
+learning approach. Given <span class="math inline"><em>V</em></span>
+vertices and <span class="math inline"><em>E</em></span> edges, the
+runtime of this algorithm is thus <span
+class="math inline"><em>O</em>(<em>V</em> + <em>E</em>)</span>; however,
+a machine learning approach may do better in time through parallelism,
+although at the expense of using much more memory.</p>
+<h3 id="potential-mathematical-approaches-to-shortest-paths">Potential
+Mathematical Approaches to Shortest Paths</h3>
+<p>Another way one can think of the shortest path of a graph is using a
+<em>matrix</em> to record which vertices are connected. Given vertices
+numbered <span class="math inline">1</span> to <span
+class="math inline"><em>V</em></span>, we denote the <strong>adjacency
+matrix</strong> <span class="math inline"><strong>M</strong></span> of
+dimensions <span class="math inline"><em>V</em> × <em>V</em></span> as
+the matrix with element <span
+class="math inline"><strong>M</strong><sub><em>i</em>, <em>j</em></sub> = 1</span>
+if vertices <span class="math inline"><em>i</em></span> and <span
+class="math inline"><em>j</em></span> are connected by an edge and <span
+class="math inline"><strong>M</strong><sub><em>i</em>, <em>j</em></sub> = 0</span>
+if they are not. Now, we note that (1) For all <span
+class="math inline"><em>k</em></span>, <span
+class="math inline">(<strong>M</strong> + <em>I</em>)<sub><em>i</em>, <em>j</em></sub><sup><em>k</em></sup> = 0</span>
+if and only if there exists no path from the vertex numbered <span
+class="math inline"><em>i</em></span> to the vertex numbered <span
+class="math inline"><em>j</em></span> that is distance <span
+class="math inline"><em>k</em></span> or less due to Markov matrix
+processes. As a result, if the distance between vertices numbered <span
+class="math inline"><em>i</em></span> and <span
+class="math inline"><em>j</em></span> is <span
+class="math inline"><em>d</em></span>, then <span
+class="math inline">min((<strong>M</strong> + <em>I</em>)<sub><em>i</em>, <em>j</em></sub><sup><em>k</em></sup>, 1) = 1</span>
+if <span class="math inline"><em>k</em> ≥ <em>d</em></span> and <span
+class="math inline">min((<strong>M</strong> + <em>I</em>)<sub><em>i</em>, <em>j</em></sub><sup><em>k</em></sup>, 1) = 0</span>
+if <span class="math inline"><em>k</em> &lt; <em>d</em></span>.</p>
+<p>With this information, because the distance between any two vertices
+is at most <span class="math inline"><em>V</em> − 1</span> in a graph
+with <span class="math inline"><em>V</em></span> vertices, we note that
+the <em>distance</em> matrix turns out to be simply <span
+class="math display"><strong>D</strong> = <strong>1</strong><sub><em>V</em> × <em>V</em></sub> ⋅ <em>V</em> − <em>Σ</em><sub><em>i</em> = 0</sub><sup><em>V</em> − 1</sup>min((<strong>M</strong> + <em>I</em>)<sub><em>i</em>, <em>j</em></sub><sup><em>k</em></sup>, 1).</span>
+The runtime to compute this is <span
+class="math inline"><em>O</em>(<em>V</em>)</span>, although it will take
+more space to compute all powers of <span
+class="math inline"><strong>M</strong></span>.</p>
+<h2 id="our-machine-learning-approach">Our Machine Learning
+Approach</h2>
+<h3 id="data">Data</h3>
 <p>We will represent an <span class="math inline"><em>n</em></span>
 vertex, <span class="math inline"><em>m</em></span> edge unweighted,
 undirected graph as sequence of the endpoints of the <span
@@ -321,7 +399,7 @@ class="math inline"><em>n</em> ∈ [16, 32)</span> instead.</li>
 generalize to different distributions of graphs, such as denser graphs
 or graphs with different properties. Time permitting, we will also
 investigate this.</p>
-<h2 id="architecture">Architecture</h2>
+<h3 id="architecture">Architecture</h3>
 <p>We plan to use a standard transformer architecture. We will ensure
 that the number of layers in our transformer is at least the diameter of
 the graph. By doing this, we ensure that there is an extremely simple
@@ -334,7 +412,8 @@ vertices besides <span class="math inline">2</span> – it seems like the
 model should be computing these other distances as intermediate values
 in its computation to find the distance to vertex <span
 class="math inline">2</span>.</p>
-<h2 id="positional-encodings">Positional Encodings</h2>
+<h3 id="embeddings">Embeddings</h3>
+<p>TODO: fix this</p>
 <p>In order to facilitate performing this task with limited
 computational resources, we plan to use custom-made positional encodings
 that tell the model extra information about the structure of the
@@ -350,6 +429,23 @@ pair is nearly orthogonal with high probability. We will concatenate
 these with the token encodings rather than adding them. This should let
 the model easily have large attention scores between vertices
 corresponding to a single edge.</p>
+<h3 id="explicit-transformer-formula-for-shortest-paths">Explicit
+transformer formula for shortest paths</h3>
+<h2 id="results">Results</h2>
+<h3 id="initial-results">Initial Results</h3>
+<p>We used a model dimension of 64 64, four layers, and two heads per
+layer. We used MSE loss, the Adam optimizer, a learning rate of 8e-4,
+and a batch size of 131,072 for 8000 unique randomly generated batches.
+Our final MSE loss was 0.35546875.</p>
+<p><img src="training-loss.png" /></p>
+<p><img src="training-2d-histogram.png" /></p>
+<h3 id="fine-tuning">Fine Tuning</h3>
+<p>After receiving our initial results, we fine-tuned with a learning
+rate of 1e-5, also with MSE and the same batch size. Our final results
+are shown below.</p>
+<p><img src="fine-tuning-loss.png" /></p>
+<p><img src="fine-tuning-2d-histogram.png" /></p>
+<p><img src="test-2d-histogram.png" /></p>
 <h2 class="unnumbered" id="references">References</h2>
 <div id="refs" class="references csl-bib-body hanging-indent"
 data-entry-spacing="0" role="list">
