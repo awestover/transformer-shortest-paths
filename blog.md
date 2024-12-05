@@ -221,8 +221,25 @@ class SillyTransformer(nn.Module):
         return final_output
 ```
 
+It looked like the fine tuning results weren't as meaningful because TODO: ALEK
 
-## Alek perturbed experiment
+## Customizing a Transformer
+
+After much deliberation, we decided the next step for us was to customize a transformer, writing it ourselves. We observed that we wished for the transformer to do similar work as a BFS. As a result, we decided to work with the following transformer, for a graph with $n$ vertices $v_1, v_2, \cdots, v_n$:
+
+\begin{array}{|c|c|c|c|c|c}
+\text{ANS} & v_{1} & v_{2} & \cdots & v_{n} & \\ \hline
+1 & 0 & 0 & \cdots & 0 & \text{ANS}\\ \hline
+\text{ANS} & \text{NBR}_{1} & \text{NBR}_{2} & \cdots & \text{NBR}_{n} & \text{NBR}\\ \hline
+\text{ANS} & \text{REACH}_{1} & \text{REACH}_{2} & \cdots & \text{REACH}_{n} & \text{REACH}\\ \hline
+\text{ANS} & \text{SELF}_{1} & \text{SELF}_{2} & \cdots & \text{SELF}_{n} & \text{SELF}\\ \hline
+V_{\text{OUT}} & NULL& NULL& NULL& NULL& \text{OUT}\\ \hline
+0 & 1 & 1 & \cdots &1 & \text{NOT}\\ \hline
+\end{array}
+
+Specifically, we see that $\text{NBR}_{i}$ is a $n \times 1$ vector detailing which of the vertices are neighboring vertex $v_i$, so the $j$th element of $v_i$ is $1$ if $v_i$ and $v_j$ are neighboring vertices, and $0$ otherwise. Additionally, $\text{SELF}_{i}$ is just the $n \times 1$ vector with the $i$th element $1$ and all other elements $0$ (e.g. the one-hot encoding of the vector). Now, at every step, the $\text{REACH}_k$ vector for all $k$ is updated based on the previous $\text{REACH}_k$ vector and $\text{NBR}_{k}$ (since all entries that are $1$ in $\text{REACH}_k\text{NBR}_{k}^T$ must be updated in the manner such that if the $(i, j)$th element of $\text{REACH}_k\text{NBR}_{k}^T$ is $1$, then $\text{REACH}_i$'s $j$th column is set to $1$. This is equivalent to adding $\text{REACH}_k$ to each integer $i$ where  $\text{NBR}_{k}$'s $i$th entry is nonzero.
+
+This iterates through all the vertices, and at the end, we may see what run we are on to update $V_{\text{OUT}}$.
 
 ## Conclusion
 

@@ -629,7 +629,63 @@ explicit transformer formula for shortest paths</h2>
 <span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a>        canreach <span class="op">=</span> src[:, <span class="dv">0</span>, START_OUT:START_OUT <span class="op">+</span> NVTXS]</span>
 <span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a>        final_output <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> torch.<span class="bu">sum</span>(<span class="dv">1</span> <span class="op">-</span> canreach, dim<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> final_output</span></code></pre></div>
-<h2 id="alek-perturbed-experiment">Alek perturbed experiment</h2>
+<p>It looked like the fine tuning results weren’t as meaningful because
+TODO: ALEK</p>
+<h2 id="customizing-a-transformer">Customizing a Transformer</h2>
+<p>After much deliberation, we decided the next step for us was to
+customize a transformer, writing it ourselves. We observed that we
+wished for the transformer to do similar work as a BFS. As a result, we
+decided to work with the following transformer, for a graph with <span
+class="math inline">n</span> vertices <span class="math inline">v_1,
+v_2, \cdots, v_n</span>:</p>
+<span class="math display">\begin{array}{|c|c|c|c|c|c}
+\text{ANS} &amp; v_{1} &amp; v_{2} &amp; \cdots &amp; v_{n} &amp; \\
+\hline
+1 &amp; 0 &amp; 0 &amp; \cdots &amp; 0 &amp; \text{ANS}\\ \hline
+\text{ANS} &amp; \text{NBR}_{1} &amp; \text{NBR}_{2} &amp; \cdots &amp;
+\text{NBR}_{n} &amp; \text{NBR}\\ \hline
+\text{ANS} &amp; \text{REACH}_{1} &amp; \text{REACH}_{2} &amp; \cdots
+&amp; \text{REACH}_{n} &amp; \text{REACH}\\ \hline
+\text{ANS} &amp; \text{SELF}_{1} &amp; \text{SELF}_{2} &amp; \cdots
+&amp; \text{SELF}_{n} &amp; \text{SELF}\\ \hline
+V_{\text{OUT}} &amp; NULL&amp; NULL&amp; NULL&amp; NULL&amp;
+\text{OUT}\\ \hline
+0 &amp; 1 &amp; 1 &amp; \cdots &amp;1 &amp; \text{NOT}\\ \hline
+\end{array}</span>
+<p>Specifically, we see that <span
+class="math inline">\text{NBR}_{i}</span> is a <span
+class="math inline">n \times 1</span> vector detailing which of the
+vertices are neighboring vertex <span class="math inline">v_i</span>, so
+the <span class="math inline">j</span>th element of <span
+class="math inline">v_i</span> is <span class="math inline">1</span> if
+<span class="math inline">v_i</span> and <span
+class="math inline">v_j</span> are neighboring vertices, and <span
+class="math inline">0</span> otherwise. Additionally, <span
+class="math inline">\text{SELF}_{i}</span> is just the <span
+class="math inline">n \times 1</span> vector with the <span
+class="math inline">i</span>th element <span
+class="math inline">1</span> and all other elements <span
+class="math inline">0</span> (e.g. the one-hot encoding of the vector).
+Now, at every step, the <span class="math inline">\text{REACH}_k</span>
+vector for all <span class="math inline">k</span> is updated based on
+the previous <span class="math inline">\text{REACH}_k</span> vector and
+<span class="math inline">\text{NBR}_{k}</span> (since all entries that
+are <span class="math inline">1</span> in <span
+class="math inline">\text{REACH}_k\text{NBR}_{k}^T</span> must be
+updated in the manner such that if the <span class="math inline">(i,
+j)</span>th element of <span
+class="math inline">\text{REACH}_k\text{NBR}_{k}^T</span> is <span
+class="math inline">1</span>, then <span
+class="math inline">\text{REACH}_i</span>’s <span
+class="math inline">j</span>th column is set to <span
+class="math inline">1</span>. This is equivalent to adding <span
+class="math inline">\text{REACH}_k</span> to each integer <span
+class="math inline">i</span> where <span
+class="math inline">\text{NBR}_{k}</span>’s <span
+class="math inline">i</span>th entry is nonzero.</p>
+<p>This iterates through all the vertices, and at the end, we may see
+what run we are on to update <span
+class="math inline">V_{\text{OUT}}</span>.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>just do bfs lol</p>
 <h2 class="unnumbered" id="references">References</h2>
