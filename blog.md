@@ -157,9 +157,9 @@ Finally, the last head will be in charge of noticing whether vertex 1 has reache
 The field of Singular Learning Theory (SLT; see Liam Carroll's Master's thesis "Phase Transitions in Neural Networks" for an introduction) aims to understand model training and loss-landscape geometry. In efforts to better understand the loss landscape of the shortest paths loss function according to the tokens used in our hand coded implementation of the shortest paths transformers, we decided to start at a good setting of the parameters, and then perturb the weights, and see if the model can subsequently achieve low loss. The intuition for why this is a good approach at measuring "how attractive of a loss basin" we have is that this experiment is similar to the Local Learning Coefficient from SLT. (see Lau, Edmund, Zach Furman, George Wang, Daniel Murfet, and Susan Wei. "The Local Learning Coefficient: A Singularity-Aware Complexity Measure"). We found that, perturbing the weights led to high loss, but gradient descent was able to recover low loss, indicating that the solution is somewhat "findable" by gradient descent.
 
 <div style="text-align:center">
-![perturb.png](perturb.png)
+![perturb.png](img/perturb.png)
 
-![perturb-loss.png](perturb-loss.png)
+![perturb-loss.png](img/perturb-loss.png)
 </div>
 
 ## Training
