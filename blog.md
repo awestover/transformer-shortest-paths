@@ -259,7 +259,7 @@ $include`raw="html"` plots/untune-hist.html
 
 The plot at first looks great because the correct answers are all yellow, but that's because the model is simply ignoring the target vertex and almost always outputting an integer. It often gets the answer correct by sheer luck, but when it doesn't, the difference is instead an integer which makes the loss very high.
 
-## Test Results
+### Test Results
 
 Lastly, we evaluated our fine-tuned model on several kinds of input to see when it generalizes.
 
@@ -279,14 +279,11 @@ $include`raw="html"` plots/test-large-any-smalltarget.html
 
 $include`raw="html"` plots/test-large-any-largetarget.html
 
-These three tests achieved a loss of $61.44$, $47.06$, and $72.87$ respectively.
+These three tests achieved a loss of $61.44$, $47.06$, and $72.87$ respectively. We didn't expect the model to generalize for this task anyways since it doesn't seem helpful to know the distances to all vertices if the model only needs to know the distances to only vertices on the $1$ to $2$ path.
 
 ## Conclusion
 
-In this post we've investigated solving the shortest paths problem with a transformer. 
-We've shown that this problem has a simple solution that can be implemented by a transformer. 
-We've shown that a transformer can learn to solve this problem. 
-We've shown that when the transformer learns to solve this problem it also implicitly builds good internal representations of the input data that allow for efficient fine tuning to find shortest paths between other vertices. Finally, we've seen that some off-distribution generalization does occur, and some does not! The main conceptual take-away from our work is that it's hard to predict when models will and won't generalize. 
+In this post, we've investigated solving the shortest paths problem with a transformer and when off-distribution generalization occurs. We explicitly constructed a transformer for BFS to show that a simple solution does indeed exist. Through experimentation, we also trained a transformer to solve shortest paths, although its internal mechanisms may be different than BFS. When the transformer learns to solve this problem, it also implicitly builds good internal representations of the input data that allow for efficient fine tuning to find shortest paths between other vertices. Finally, we've seen that some off-distribution generalization does occur, and some doesn't. The main conceptual take-away from our work is that it's hard to predict when models will and won't generalize. 
 
 ## Appendix
 
